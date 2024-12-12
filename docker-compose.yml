@@ -1,0 +1,32 @@
+version: '3.9'
+services:
+  front:
+    depends_on:
+      back:
+        condition: service_healthy
+    build: .
+    ports:
+      - "8081:8081"
+  
+  postgres:
+    depends_on:
+      postgres:
+       condition: service_healthy
+    extends:
+      file: back/docker_compose.yml
+      service: postgres
+    healthcheck:
+      interval: 2s
+      timeout: 2s
+      retries: 5
+      test: ["CMD-SHELL", "pg_isready -U proway"]
+
+  back:
+    extends:
+      file: back/docker_compose.yml
+      service: back
+    healthcheck:
+      interval: 2s
+      timeout: 2s
+      retries: 5
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
